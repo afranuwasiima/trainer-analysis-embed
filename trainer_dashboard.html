@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Performance Dashboard - Educate!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: #1e293b;
+            padding: 16px 24px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header h1 {
+            color: #f97316;
+            font-size: 24px;
+        }
+
+        .header-subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 16px;
+        }
+
+        .stat-card {
+            background: #0f172a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            min-width: 100px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 90px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: #1e293b;
+            border-right: 1px solid #334155;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .filter-section {
+            padding: 16px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .filter-title {
+            font-size: 12px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .filter-select {
+            width: 100%;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 14px;
+        }
+
+        .clear-btn {
+            width: 100%;
+            padding: 8px;
+            background: transparent;
+            border: 1px solid #475569;
+            border-radius: 6px;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .clear-btn:hover {
+            background: #334155;
+        }
+
+        /* Trainer List */
+        .trainer-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        .list-title {
+            font-size: 14px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .trainer-card {
+            background: #0f172a;
+            padding: 12px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            border-left: 4px solid #6b7280;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .trainer-card:hover {
+            background: #334155;
+            transform: translateX(4px);
+        }
+
+        .trainer-card.selected {
+            background: #334155;
+            transform: translateX(4px);
+        }
+
+        .trainer-card-name {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .trainer-card-meta {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .trainer-card-score {
+            margin-top: 8px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* Main Panel */
+        .main-panel {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            color: #64748b;
+        }
+
+        .placeholder h2 {
+            margin-bottom: 8px;
+        }
+
+        /* Trainer Header */
+        .trainer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: #1e293b;
+            border-radius: 12px;
+            margin-bottom: 24px;
+        }
+
+        .trainer-name {
+            font-size: 28px;
+            margin-bottom: 4px;
+        }
+
+        .trainer-meta {
+            color: #94a3b8;
+        }
+
+        .score-circle {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #0f172a;
+            border: 4px solid #f97316;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .score-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: #1e293b;
+            border: none;
+            border-radius: 8px;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .tab.active {
+            background: #f97316;
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: #334155;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            background: #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .section {
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 16px;
+            color: #f97316;
+            margin-bottom: 16px;
+        }
+
+        /* Competency Bars */
+        .competency-item {
+            display: grid;
+            grid-template-columns: 180px 1fr 60px;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .competency-label {
+            font-size: 13px;
+        }
+
+        .competency-bar {
+            height: 8px;
+            background: #0f172a;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .competency-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .competency-score {
+            text-align: right;
+            font-weight: bold;
+        }
+
+        /* History Table */
+        .history-header, .history-row {
+            display: grid;
+            grid-template-columns: 100px 80px 1fr 80px;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .history-header {
+            border-bottom: 1px solid #334155;
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .history-row {
+            border-bottom: 1px solid #1e293b;
+            font-size: 14px;
+        }
+
+        /* Comparison Cards */
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .comparison-card {
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .comparison-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .comparison-icon {
+            font-size: 20px;
+        }
+
+        .comparison-label {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .comparison-scores {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .comparison-trainer-score {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .comparison-vs {
+            color: #64748b;
+        }
+
+        .comparison-avg {
+            font-size: 20px;
+            color: #94a3b8;
+        }
+
+        .comparison-bar-bg {
+            position: relative;
+            height: 8px;
+            background: #334155;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .comparison-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .comparison-marker {
+            position: absolute;
+            top: -4px;
+            width: 4px;
+            height: 16px;
+            background: white;
+            border-radius: 2px;
+            transform: translateX(-50%);
+        }
+
+        .comparison-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        /* Analysis */
+        .summary-text {
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .pattern-list {
+            padding-left: 20px;
+        }
+
+        .pattern-item {
+            margin-bottom: 8px;
+            color: #cbd5e1;
+        }
+
+        .plan-step {
+            display: flex;
+            gap: 16px;
+            background: #0f172a;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            background: #f97316;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .step-action {
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .step-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .urgency-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Loading */
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #334155;
+            border-top-color: #f97316;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            color: #94a3b8;
+        }
+
+        /* Error */
+        .error-container {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .retry-btn {
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: #f97316;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Colors */
+        .score-exceptional { color: #059669; }
+        .score-strong { color: #10b981; }
+        .score-adequate { color: #f59e0b; }
+        .score-developing { color: #f97316; }
+        .score-needs-support { color: #ef4444; }
+
+        .bg-exceptional { background: #059669; }
+        .bg-strong { background: #10b981; }
+        .bg-adequate { background: #f59e0b; }
+        .bg-developing { background: #f97316; }
+        .bg-needs-support { background: #ef4444; }
+
+        .border-exceptional { border-left-color: #059669; }
+        .border-strong { border-left-color: #10b981; }
+        .border-adequate { border-left-color: #f59e0b; }
+        .border-developing { border-left-color: #f97316; }
+        .border-needs-support { border-left-color: #ef4444; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+            .sidebar {
+                width: 100%;
+                max-height: 50vh;
+            }
+            .header-stats {
+                display: none;
+            }
+            .comparison-grid {
+                grid-template-columns: 1fr;
+            }
+            .competency-item {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p class="loading-text">Loading trainer data...</p>
+        </div>
+    </div>
+
+    <script>
+        // =============================================================================
+        // CONFIGURATION - UPDATE THESE IF NEEDED
+        // =============================================================================
+        const API_BASE_URL = 'https://trainer-performance-system.onrender.com';
+        const API_USERNAME = 'educate';
+        const API_PASSWORD = 'EBA_Uganda_2026';
+
+        // =============================================================================
+        // STATE
+        // =============================================================================
+        let state = {
+            trainers: [],
+            benchmarks: null,
+            filters: null,
+            selectedTrainer: null,
+            analysis: null,
+            activeTab: 'overview',
+            districtFilter: '',
+            siteFilter: '',
+            weekFilter: ''
+        };
+
+        // =============================================================================
+        // API FUNCTIONS
+        // =============================================================================
+        function getAuthHeader() {
+            const credentials = btoa(`${API_USERNAME}:${API_PASSWORD}`);
+            return { 'Authorization': `Basic ${credentials}` };
+        }
+
+        async function apiFetch(endpoint) {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                headers: getAuthHeader()
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+
+        async function loadData() {
+            try {
+                const [trainersData, benchmarksData, filtersData] = await Promise.all([
+                    apiFetch('/api/trainers'),
+                    apiFetch('/api/benchmarks'),
+                    apiFetch('/api/filters')
+                ]);
+                state.trainers = trainersData.trainers || [];
+                state.benchmarks = benchmarksData;
+                state.filters = filtersData;
+                render();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                renderError('Failed to load data. The server might be waking up - please wait 30 seconds and try again.');
+            }
+        }
+
+        async function loadAnalysis(trainerId) {
+            try {
+                state.analysis = await apiFetch(`/api/analyze/${trainerId}`);
+                render();
+            } catch (error) {
+                console.error('Failed to load analysis:', error);
+            }
+        }
+
+        // =============================================================================
+        // HELPER FUNCTIONS
+        // =============================================================================
+        function getScoreColor(score) {
+            if (score >= 4.5) return 'exceptional';
+            if (score >= 4.0) return 'strong';
+            if (score >= 3.5) return 'adequate';
+            if (score >= 3.0) return 'developing';
+            return 'needs-support';
+        }
+
+        function getScoreLabel(score) {
+            if (score >= 4.5) return 'Exceptional';
+            if (score >= 4.0) return 'Strong';
+            if (score >= 3.5) return 'Adequate';
+            if (score >= 3.0) return 'Developing';
+            return 'Needs Support';
+        }
+
+        function getFilteredTrainers() {
+            return state.trainers.filter(t => {
+                if (state.districtFilter && t.district_name !== state.districtFilter) return false;
+                if (state.siteFilter && t.training_site !== state.siteFilter) return false;
+                if (state.weekFilter && !t.observations?.some(o => o.week === state.weekFilter)) return false;
+                return true;
+            });
+        }
+
+        function getAvailableSites() {
+            if (!state.filters?.sites) return [];
+            if (!state.districtFilter) return state.filters.sites;
+            return [...new Set(state.trainers
+                .filter(t => t.district_name === state.districtFilter)
+                .map(t => t.training_site)
+            )].sort();
+        }
+
+        // =============================================================================
+        // EVENT HANDLERS
+        // =============================================================================
+        function selectTrainer(trainerId) {
+            state.selectedTrainer = state.trainers.find(t => t.trainer_id === trainerId);
+            state.analysis = null;
+            state.activeTab = 'overview';
+            loadAnalysis(trainerId);
+            render();
+        }
+
+        function setTab(tab) {
+            state.activeTab = tab;
+            render();
+        }
+
+        function setDistrictFilter(value) {
+            state.districtFilter = value;
+            state.siteFilter = '';
+            render();
+        }
+
+        function setSiteFilter(value) {
+            state.siteFilter = value;
+            render();
+        }
+
+        function setWeekFilter(value) {
+            state.weekFilter = value;
+            render();
+        }
+
+        function clearFilters() {
+            state.districtFilter = '';
+            state.siteFilter = '';
+            state.weekFilter = '';
+            render();
+        }
+
+        // =============================================================================
+        // RENDER FUNCTIONS
+        // =============================================================================
+        function render() {
+            const app = document.getElementById('app');
+            const filteredTrainers = getFilteredTrainers();
+            const availableSites = getAvailableSites();
+
+            app.innerHTML = `
+                <!-- Header -->
+                <header class="header">
+                    <div>
+                        <h1>🎓 Trainer Performance Dashboard</h1>
+                        <p class="header-subtitle">E!BA Bootcamp 2025 - Educate!</p>
+                    </div>
+                    ${state.benchmarks ? `
+                        <div class="header-stats">
+                            <div class="stat-card" style="border-left-color: #3b82f6;">
+                                <div class="stat-value">${state.benchmarks.program?.trainers || 0}</div>
+                                <div class="stat-label">Trainers</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #10b981;">
+                                <div class="stat-value">${state.benchmarks.program?.observations || 0}</div>
+                                <div class="stat-label">Observations</div>
+                            </div>
+                            <div class="stat-card" style="border-left-color: #f59e0b;">
+                                <div class="stat-value">${state.benchmarks.program?.average?.toFixed(2) || '0'}</div>
+                                <div class="stat-label">Avg Score</div>
+                            </div>
+                        </div>
+                    ` : ''}
+                </header>
+
+                <div class="main-container">
+                    <!-- Sidebar -->
+                    <aside class="sidebar">
+                        <div class="filter-section">
+                            <div class="filter-title">Filters</div>
+                            <select class="filter-select" onchange="setDistrictFilter(this.value)">
+                                <option value="">All Districts</option>
+                                ${state.filters?.districts?.map(d => `
+                                    <option value="${d}" ${state.districtFilter === d ? 'selected' : ''}>${d}</option>
+                                `).join('') || ''}
+                            </select>
+                            <select class="filter-select" onchange="setSiteFilter(this.value)">
+                                <option value="">All Sites</option>
+                                ${availableSites.map(s => `
+                                    <option value="${s}" ${state.siteFilter === s ? 'selected' : ''}>${s}</option>
+                                `).join('')}
+                            </select>
+                            <select class="filter-select" onchange="setWeekFilter(this.value)">
+                                <option value="">All Weeks</option>
+                                ${state.filters?.weeks?.map(w => `
+                                    <option value="${w}" ${state.weekFilter === w ? 'selected' : ''}>${w}</option>
+                                `).join('') || ''}
+                            </select>
+                            ${(state.districtFilter || state.siteFilter || state.weekFilter) ? `
+                                <button class="clear-btn" onclick="clearFilters()">Clear Filters</button>
+                            ` : ''}
+                        </div>
+
+                        <div class="trainer-list">
+                            <div class="list-title">Trainers (${filteredTrainers.length})</div>
+                            ${filteredTrainers.map(t => `
+                                <div class="trainer-card border-${getScoreColor(t.stats?.average_score || 0)} ${state.selectedTrainer?.trainer_id === t.trainer_id ? 'selected' : ''}" 
+                                     onclick="selectTrainer('${t.trainer_id}')">
+                                    <div class="trainer-card-name">${t.trainer_name}</div>
+                                    <div class="trainer-card-meta">${t.district_name} • ${t.stats?.observations_count || 0} obs</div>
+                                    <div class="trainer-card-score score-${getScoreColor(t.stats?.average_score || 0)}">
+                                        ${t.stats?.average_score?.toFixed(2) || '0.00'}
+                                        ${t.stats?.trend === 'improving' ? '📈' : t.stats?.trend === 'declining' ? '📉' : '➡️'}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </aside>
+
+                    <!-- Main Panel -->
+                    <main class="main-panel">
+                        ${state.selectedTrainer ? renderTrainerDetail() : `
+                            <div class="placeholder">
+                                <h2>👈 Select a trainer</h2>
+                                <p>Choose a trainer from the list to view their performance details</p>
+                            </div>
+                        `}
+                    </main>
+                </div>
+            `;
+        }
+
+        function renderTrainerDetail() {
+            const t = state.selectedTrainer;
+            const scoreColor = getScoreColor(t.stats?.average_score || 0);
+
+            return `
+                <!-- Trainer Header -->
+                <div class="trainer-header">
+                    <div>
+                        <h2 class="trainer-name">${t.trainer_name}</h2>
+                        <p class="trainer-meta">${t.trainer_gender} • ${t.district_name} • ${t.training_site}</p>
+                    </div>
+                    <div class="score-circle">
+                        <span class="score-value">${t.stats?.average_score?.toFixed(2) || '0'}</span>
+                        <span class="score-label">${getScoreLabel(t.stats?.average_score || 0)}</span>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="tabs">
+                    <button class="tab ${state.activeTab === 'overview' ? 'active' : ''}" onclick="setTab('overview')">Overview</button>
+                    <button class="tab ${state.activeTab === 'comparisons' ? 'active' : ''}" onclick="setTab('comparisons')">Comparisons</button>
+                    <button class="tab ${state.activeTab === 'analysis' ? 'active' : ''}" onclick="setTab('analysis')">AI Analysis</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    ${state.activeTab === 'overview' ? renderOverviewTab() : ''}
+                    ${state.activeTab === 'comparisons' ? renderComparisonsTab() : ''}
+                    ${state.activeTab === 'analysis' ? renderAnalysisTab() : ''}
+                </div>
+            `;
+        }
+
+        function renderOverviewTab() {
+            const t = state.selectedTrainer;
+            const latestObs = t.observations?.[t.observations.length - 1] || {};
+            
+            const competencies = [
+                { key: 'pck', label: 'Pedagogical Content Knowledge' },
+                { key: 'fds', label: 'Facilitation & Delivery' },
+                { key: 'em', label: 'Entrepreneurship Mindset' },
+                { key: 'gr', label: 'Gender Responsiveness' },
+                { key: 'cm', label: 'Coaching & Mentoring' },
+                { key: 'leadership', label: 'Leadership' }
+            ];
+
+            return `
+                <div class="section">
+                    <h3 class="section-title">Competency Scores (Latest Observation)</h3>
+                    ${competencies.map(c => `
+                        <div class="competency-item">
+                            <div class="competency-label">${c.label}</div>
+                            <div class="competency-bar">
+                                <div class="competency-fill bg-${getScoreColor(latestObs[c.key] || 0)}" 
+                                     style="width: ${((latestObs[c.key] || 0) / 5) * 100}%"></div>
+                            </div>
+                            <div class="competency-score score-${getScoreColor(latestObs[c.key] || 0)}">
+                                ${(latestObs[c.key] || 0).toFixed(2)}
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="section">
+                    <h3 class="section-title">Observation History</h3>
+                    <div class="history-header">
+                        <span>Date</span>
+                        <span>Week</span>
+                        <span>Observer</span>
+                        <span>Score</span>
+                    </div>
+                    ${t.observations?.map(o => `
+                        <div class="history-row">
+                            <span>${o.date || '-'}</span>
+                            <span>${o.week || '-'}</span>
+                            <span>${o.observer || '-'}</span>
+                            <span class="score-${getScoreColor(o.overall_score)}">${o.overall_score?.toFixed(2) || '-'}</span>
+                        </div>
+                    `).join('') || '<p>No observations</p>'}
+                </div>
+            `;
+        }
+
+        function renderComparisonsTab() {
+            if (!state.analysis) {
+                return '<p style="text-align: center; color: #94a3b8;">Loading analysis...</p>';
+            }
+
+            const comparisons = [
+                { key: 'program', label: 'Program-Wide', icon: '🌍' },
+                { key: 'district', label: `District (${state.analysis.comparisons?.district?.name || ''})`, icon: '📍' },
+                { key: 'site', label: `Site`, icon: '🏫' },
+                { key: 'gender', label: `Gender (${state.analysis.comparisons?.gender?.group || ''})`, icon: '👥' }
+            ];
+
+            return `
+                <div class="comparison-grid">
+                    ${comparisons.map(c => {
+                        const data = state.analysis.comparisons?.[c.key];
+                        if (!data) return '';
+                        const diffColor = data.diff >= 0 ? '#10b981' : '#ef4444';
+                        
+                        return `
+                            <div class="comparison-card">
+                                <div class="comparison-header">
+                                    <span class="comparison-icon">${c.icon}</span>
+                                    <span class="comparison-label">${c.label}</span>
+                                </div>
+                                <div class="comparison-scores">
+                                    <span class="comparison-trainer-score">${data.trainer_avg}</span>
+                                    <span class="comparison-vs">vs</span>
+                                    <span class="comparison-avg">${data.avg}</span>
+                                </div>
+                                <div class="comparison-bar-bg">
+                                    <div class="comparison-bar-fill" style="width: ${(data.trainer_avg / 5) * 100}%; background: ${diffColor}"></div>
+                                    <div class="comparison-marker" style="left: ${(data.avg / 5) * 100}%"></div>
+                                </div>
+                                <div class="comparison-meta">
+                                    <span style="color: ${diffColor}">${data.diff >= 0 ? '+' : ''}${data.diff}</span>
+                                    ${data.rank ? `<span>Rank #${data.rank} of ${data.total}</span>` : ''}
+                                    ${data.percentile !== undefined ? `<span>${data.percentile}th %ile</span>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function renderAnalysisTab() {
+            if (!state.analysis) {
+                return '<p style="text-align: center; color: #94a3b8;">Loading analysis...</p>';
+            }
+
+            const a = state.analysis;
+            const urgencyColor = a.intervention_urgency === 'immediate' ? '#ef4444' :
+                                a.intervention_urgency === 'short-term' ? '#f59e0b' : '#10b981';
+
+            return `
+                <!-- Executive Summary -->
+                <div class="section">
+                    <h3 class="section-title">📋 Executive Summary</h3>
+                    <p class="summary-text">${a.executive_summary || 'No summary available'}</p>
+                </div>
+
+                <!-- Intervention Urgency -->
+                <div class="section">
+                    <h3 class="section-title">⚡ Intervention Urgency</h3>
+                    <div style="display: flex; align-items: center; gap: 16px;">
+                        <span class="urgency-badge" style="background: ${urgencyColor}">
+                            ${(a.intervention_urgency || 'monitoring').toUpperCase()}
+                        </span>
+                        <span style="color: #94a3b8; font-size: 14px;">${a.urgency_rationale || ''}</span>
+                    </div>
+                </div>
+
+                <!-- Key Strengths -->
+                ${a.key_strengths?.length ? `
+                    <div class="section">
+                        <h3 class="section-title">💪 Key Strengths</h3>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            ${a.key_strengths.map(s => `
+                                <div style="background: #064e3b33; border-left: 4px solid #10b981; padding: 12px 16px; border-radius: 8px;">
+                                    <div style="font-weight: 600; color: #10b981; margin-bottom: 4px;">
+                                        ${s.competency} ${s.average_score ? `(${s.average_score}/5.0)` : ''}
+                                    </div>
+                                    <div style="color: #cbd5e1; font-size: 14px;">${s.analysis}</div>
+                                    ${s.example ? `<div style="color: #94a3b8; font-size: 13px; margin-top: 8px; font-style: italic;">"${s.example}"</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Development Areas -->
+                ${a.development_areas?.length ? `
+                    <div class="section">
+                        <h3 class="section-title">🎯 Development Areas</h3>
+                        <div style="display: flex; flex-direction: column; gap: 12px;">
+                            ${a.development_areas.map(d => `
+                                <div style="background: #7f1d1d33; border-left: 4px solid ${d.urgency === 'HIGH' ? '#ef4444' : d.urgency === 'MEDIUM' ? '#f59e0b' : '#6b7280'}; padding: 12px 16px; border-radius: 8px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                                        <span style="font-weight: 600; color: ${d.urgency === 'HIGH' ? '#ef4444' : d.urgency === 'MEDIUM' ? '#f59e0b' : '#94a3b8'};">
+                                            ${d.competency} ${d.average_score ? `(${d.average_score}/5.0)` : ''}
+                                        </span>
+                                        ${d.urgency ? `<span style="font-size: 11px; padding: 2px 8px; border-radius: 10px; background: ${d.urgency === 'HIGH' ? '#ef4444' : d.urgency === 'MEDIUM' ? '#f59e0b' : '#6b7280'}; color: white;">${d.urgency} PRIORITY</span>` : ''}
+                                    </div>
+                                    <div style="color: #cbd5e1; font-size: 14px;">${d.analysis}</div>
+                                    ${d.example ? `<div style="color: #94a3b8; font-size: 13px; margin-top: 8px; font-style: italic;">"${d.example}"</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Detailed Improvement Plan -->
+                ${a.improvement_plan?.length ? `
+                    <div class="section">
+                        <h3 class="section-title">📝 Improvement Plan for Observer</h3>
+                        <p style="color: #94a3b8; font-size: 14px; margin-bottom: 16px;">Use this plan when coaching the trainer:</p>
+                        ${a.improvement_plan.map(step => `
+                            <div class="plan-step" style="margin-bottom: 16px; ${step.priority === 'IMMEDIATE' ? 'border: 1px solid #ef4444;' : step.priority === 'SHORT-TERM' ? 'border: 1px solid #f59e0b;' : ''}">
+                                <div class="step-number" style="background: ${step.priority === 'IMMEDIATE' ? '#ef4444' : step.priority === 'SHORT-TERM' ? '#f59e0b' : step.priority === 'LEVERAGE STRENGTH' ? '#10b981' : '#f97316'};">${step.step}</div>
+                                <div style="flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <span style="font-weight: 700; color: #f97316;">${step.priority}</span>
+                                        ${step.timeline ? `<span style="font-size: 12px; color: #94a3b8;">⏱️ ${step.timeline}</span>` : ''}
+                                    </div>
+                                    <div style="font-weight: 600; margin-bottom: 8px;">${step.focus_area}</div>
+                                    ${step.current_score ? `
+                                        <div style="font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+                                            Current: ${step.current_score}/5.0 → Target: ${step.target_score}/5.0
+                                        </div>
+                                    ` : ''}
+                                    ${step.diagnosis ? `<div style="color: #cbd5e1; font-size: 14px; margin-bottom: 12px;">${step.diagnosis}</div>` : ''}
+                                    ${step.actions?.length ? `
+                                        <div style="background: #0f172a; padding: 12px; border-radius: 6px; margin-bottom: 8px;">
+                                            <div style="font-size: 12px; color: #f97316; margin-bottom: 8px;">ACTION STEPS:</div>
+                                            <ul style="margin: 0; padding-left: 20px; color: #e2e8f0; font-size: 14px;">
+                                                ${step.actions.map(action => `<li style="margin-bottom: 6px;">${action}</li>`).join('')}
+                                            </ul>
+                                        </div>
+                                    ` : ''}
+                                    ${step.coaching_tip ? `
+                                        <div style="background: #1e3a5f; padding: 10px 12px; border-radius: 6px; font-size: 13px;">
+                                            <span style="color: #60a5fa;">💡 Coaching Tip:</span> 
+                                            <span style="color: #cbd5e1;">${step.coaching_tip}</span>
+                                        </div>
+                                    ` : ''}
+                                    ${step.resources ? `
+                                        <div style="font-size: 12px; color: #94a3b8; margin-top: 8px;">📚 Resources: ${step.resources}</div>
+                                    ` : ''}
+                                    ${step.success_metric ? `
+                                        <div style="font-size: 13px; color: #10b981; margin-top: 8px;">🎯 Success Metric: ${step.success_metric}</div>
+                                    ` : ''}
+                                    ${step.example_feedback ? `
+                                        <div style="font-size: 13px; color: #94a3b8; margin-top: 8px; font-style: italic;">"${step.example_feedback}"</div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                <!-- Observer Action Items -->
+                ${a.observer_action_items?.length ? `
+                    <div class="section">
+                        <h3 class="section-title">✅ Observer Action Items</h3>
+                        <div style="background: #1e3a5f; padding: 16px; border-radius: 8px;">
+                            <ul style="margin: 0; padding-left: 20px;">
+                                ${a.observer_action_items.map(item => `
+                                    <li style="color: #e2e8f0; margin-bottom: 8px;">${item}</li>
+                                `).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Qualitative Insights -->
+                ${(a.qualitative_insights?.strengths_from_comments?.length || a.qualitative_insights?.weaknesses_from_comments?.length) ? `
+                    <div class="section">
+                        <h3 class="section-title">💬 Themes from Observer Comments</h3>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            ${a.qualitative_insights?.strengths_from_comments?.length ? `
+                                <div>
+                                    <div style="font-size: 13px; color: #10b981; margin-bottom: 8px;">Positive Themes:</div>
+                                    ${a.qualitative_insights.strengths_from_comments.slice(0, 3).map(t => `
+                                        <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">
+                                            • ${t.theme} (${t.frequency}x)
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                            ${a.qualitative_insights?.weaknesses_from_comments?.length ? `
+                                <div>
+                                    <div style="font-size: 13px; color: #f59e0b; margin-bottom: 8px;">Areas Noted:</div>
+                                    ${a.qualitative_insights.weaknesses_from_comments.slice(0, 3).map(t => `
+                                        <div style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">
+                                            • ${t.theme} (${t.frequency}x)
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        function renderError(message) {
+            document.getElementById('app').innerHTML = `
+                <div class="error-container">
+                    <h2>⚠️ Connection Error</h2>
+                    <p>${message}</p>
+                    <button class="retry-btn" onclick="location.reload()">Retry</button>
+                </div>
+            `;
+        }
+
+        // =============================================================================
+        // INITIALIZE
+        // =============================================================================
+        loadData();
+    </script>
+</body>
+</html>

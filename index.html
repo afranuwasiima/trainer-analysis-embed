@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trainer Analysis - Educate!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px;
+        }
+
+        /* Trainer Selector */
+        .selector-section {
+            background: #1e293b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .selector-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .selector-label {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        select {
+            padding: 10px 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            color: #e2e8f0;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #f97316;
+        }
+
+        .refresh-btn {
+            padding: 10px 16px;
+            background: #f97316;
+            border: none;
+            border-radius: 6px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .refresh-btn:hover {
+            background: #ea580c;
+        }
+
+        /* Trainer Header */
+        .trainer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1e293b;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .trainer-name {
+            font-size: 22px;
+            font-weight: bold;
+            color: #f97316;
+        }
+
+        .trainer-meta {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+
+        .score-badge {
+            text-align: center;
+            padding: 12px 20px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 3px solid #f97316;
+        }
+
+        .score-value {
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .score-label {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Sections */
+        .section {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f97316;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #f97316;
+            border-radius: 2px;
+        }
+
+        /* Summary */
+        .summary-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        /* Urgency */
+        .urgency-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .urgency-badge {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .urgency-rationale {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        /* Strengths & Development Areas */
+        .item-card {
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            border-left: 4px solid;
+        }
+
+        .item-card.strength {
+            background: #064e3b33;
+            border-left-color: #10b981;
+        }
+
+        .item-card.development {
+            background: #7f1d1d33;
+            border-left-color: #ef4444;
+        }
+
+        .item-card.development.medium {
+            border-left-color: #f59e0b;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .item-title {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .item-title.strength {
+            color: #10b981;
+        }
+
+        .item-title.development {
+            color: #ef4444;
+        }
+
+        .item-title.development.medium {
+            color: #f59e0b;
+        }
+
+        .priority-tag {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            color: white;
+        }
+
+        .priority-high {
+            background: #ef4444;
+        }
+
+        .priority-medium {
+            background: #f59e0b;
+        }
+
+        .priority-low {
+            background: #6b7280;
+        }
+
+        .item-analysis {
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        .item-example {
+            font-size: 12px;
+            color: #94a3b8;
+            font-style: italic;
+            margin-top: 6px;
+        }
+
+        /* Improvement Plan */
+        .plan-step {
+            display: flex;
+            gap: 12px;
+            background: #0f172a;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .plan-step.immediate {
+            border: 1px solid #ef4444;
+        }
+
+        .plan-step.short-term {
+            border: 1px solid #f59e0b;
+        }
+
+        .step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .step-priority {
+            font-weight: 700;
+            font-size: 12px;
+            color: #f97316;
+        }
+
+        .step-timeline {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        .step-focus {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .step-scores {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 6px;
+        }
+
+        .step-diagnosis {
+            font-size: 13px;
+            color: #cbd5e1;
+            margin-bottom: 10px;
+        }
+
+        .actions-box {
+            background: #1e293b;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+        }
+
+        .actions-title {
+            font-size: 11px;
+            color: #f97316;
+            margin-bottom: 6px;
+        }
+
+        .actions-list {
+            margin: 0;
+            padding-left: 18px;
+            font-size: 13px;
+            color: #e2e8f0;
+        }
+
+        .actions-list li {
+            margin-bottom: 4px;
+        }
+
+        .coaching-tip {
+            background: #1e3a5f;
+            padding: 8px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .coaching-tip-label {
+            color: #60a5fa;
+        }
+
+        .coaching-tip-text {
+            color: #cbd5e1;
+        }
+
+        .step-metric {
+            font-size: 12px;
+            color: #10b981;
+        }
+
+        /* Action Items */
+        .action-items-list {
+            background: #1e3a5f;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .action-items-list ul {
+            margin: 0;
+            padding-left: 18px;
+        }
+
+        .action-items-list li {
+            font-size: 13px;
+            color: #e2e8f0;
+            margin-bottom: 6px;
+        }
+
+        /* Themes */
+        .themes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .theme-column-title {
+            font-size: 12px;
+            margin-bottom: 6px;
+        }
+
+        .theme-column-title.positive {
+            color: #10b981;
+        }
+
+        .theme-column-title.concern {
+            color: #f59e0b;
+        }
+
+        .theme-item {
+            font-size: 12px;
+            color: #cbd5e1;
+            margin-bottom: 3px;
+        }
+
+        /* Loading & Error */
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #334155;
+            border-top-color: #f97316;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 12px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text, .error-text {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .error-text {
+            color: #ef4444;
+        }
+
+        /* Collapsible sections */
+        .collapsible-header {
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .collapsible-header:hover {
+            opacity: 0.8;
+        }
+
+        .collapse-icon {
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .collapsible-content {
+            margin-top: 12px;
+        }
+
+        .collapsible-content.collapsed {
+            display: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .selector-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            select {
+                min-width: 100%;
+            }
+
+            .trainer-header {
+                flex-direction: column;
+                text-align: center;
+                gap: 12px;
+            }
+
+            .themes-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="loading">
+            <div class="spinner"></div>
+            <p class="loading-text">Loading trainer data...</p>
+        </div>
+    </div>
+
+    <script>
+        // =============================================================================
+        // CONFIGURATION
+        // =============================================================================
+        const API_BASE_URL = 'https://trainer-performance-system.onrender.com';
+        const API_USERNAME = 'educate';
+        const API_PASSWORD = 'EBA_Uganda_2026';
+
+        // Get trainer from URL parameter (for Looker integration)
+        const urlParams = new URLSearchParams(window.location.search);
+        const preselectedTrainer = urlParams.get('trainer');
+        const preselectedDistrict = urlParams.get('district');
+        const hideSelector = urlParams.get('hideSelector') === 'true';
+
+        // =============================================================================
+        // STATE
+        // =============================================================================
+        let state = {
+            trainers: [],
+            filters: null,
+            selectedTrainerId: preselectedTrainer || null,
+            analysis: null,
+            loading: true,
+            error: null,
+            collapsedSections: {}
+        };
+
+        // =============================================================================
+        // API FUNCTIONS
+        // =============================================================================
+        function getAuthHeader() {
+            const credentials = btoa(`${API_USERNAME}:${API_PASSWORD}`);
+            return { 'Authorization': `Basic ${credentials}` };
+        }
+
+        async function apiFetch(endpoint) {
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                headers: getAuthHeader()
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            return response.json();
+        }
+
+        async function loadInitialData() {
+            try {
+                const [trainersData, filtersData] = await Promise.all([
+                    apiFetch('/api/trainers'),
+                    apiFetch('/api/filters')
+                ]);
+                
+                state.trainers = trainersData.trainers || [];
+                state.filters = filtersData;
+                state.loading = false;
+
+                // Auto-select trainer if specified in URL or select first one
+                if (state.selectedTrainerId) {
+                    await loadAnalysis(state.selectedTrainerId);
+                } else if (state.trainers.length > 0) {
+                    state.selectedTrainerId = state.trainers[0].trainer_id;
+                    await loadAnalysis(state.selectedTrainerId);
+                }
+                
+                render();
+            } catch (error) {
+                console.error('Failed to load data:', error);
+                state.error = 'Failed to connect. Server may be starting up - please wait 30 seconds and refresh.';
+                state.loading = false;
+                render();
+            }
+        }
+
+        async function loadAnalysis(trainerId) {
+            try {
+                state.analysis = await apiFetch(`/api/analyze/${trainerId}`);
+            } catch (error) {
+                console.error('Failed to load analysis:', error);
+                state.analysis = null;
+            }
+        }
+
+        // =============================================================================
+        // EVENT HANDLERS
+        // =============================================================================
+        async function selectTrainer(trainerId) {
+            state.selectedTrainerId = trainerId;
+            state.analysis = null;
+            render();
+            await loadAnalysis(trainerId);
+            render();
+        }
+
+        function toggleSection(sectionId) {
+            state.collapsedSections[sectionId] = !state.collapsedSections[sectionId];
+            render();
+        }
+
+        async function refreshData() {
+            state.loading = true;
+            render();
+            await loadInitialData();
+        }
+
+        // =============================================================================
+        // HELPER FUNCTIONS
+        // =============================================================================
+        function getScoreColor(score) {
+            if (score >= 4.5) return '#059669';
+            if (score >= 4.0) return '#10b981';
+            if (score >= 3.5) return '#f59e0b';
+            if (score >= 3.0) return '#f97316';
+            return '#ef4444';
+        }
+
+        function getScoreLabel(score) {
+            if (score >= 4.5) return 'Exceptional';
+            if (score >= 4.0) return 'Strong';
+            if (score >= 3.5) return 'Adequate';
+            if (score >= 3.0) return 'Developing';
+            return 'Needs Support';
+        }
+
+        function getSelectedTrainer() {
+            return state.trainers.find(t => t.trainer_id === state.selectedTrainerId);
+        }
+
+        // =============================================================================
+        // RENDER
+        // =============================================================================
+        function render() {
+            const app = document.getElementById('app');
+
+            if (state.loading) {
+                app.innerHTML = `
+                    <div class="loading">
+                        <div class="spinner"></div>
+                        <p class="loading-text">Loading trainer data...</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (state.error) {
+                app.innerHTML = `
+                    <div class="error">
+                        <p class="error-text">⚠️ ${state.error}</p>
+                        <button class="refresh-btn" onclick="refreshData()" style="margin-top: 16px;">Retry</button>
+                    </div>
+                `;
+                return;
+            }
+
+            const trainer = getSelectedTrainer();
+            const a = state.analysis;
+
+            app.innerHTML = `
+                ${!hideSelector ? `
+                    <div class="selector-section">
+                        <div class="selector-row">
+                            <span class="selector-label">Select Trainer:</span>
+                            <select onchange="selectTrainer(this.value)">
+                                ${state.trainers.map(t => `
+                                    <option value="${t.trainer_id}" ${t.trainer_id === state.selectedTrainerId ? 'selected' : ''}>
+                                        ${t.trainer_name} (${t.district_name}) - ${t.stats?.average_score?.toFixed(2) || '0'}
+                                    </option>
+                                `).join('')}
+                            </select>
+                            <button class="refresh-btn" onclick="refreshData()">🔄 Refresh</button>
+                        </div>
+                    </div>
+                ` : ''}
+
+                ${trainer ? `
+                    <!-- Trainer Header -->
+                    <div class="trainer-header">
+                        <div>
+                            <div class="trainer-name">${trainer.trainer_name}</div>
+                            <div class="trainer-meta">${trainer.trainer_gender} • ${trainer.district_name} • ${trainer.training_site}</div>
+                        </div>
+                        <div class="score-badge">
+                            <div class="score-value" style="color: ${getScoreColor(trainer.stats?.average_score || 0)}">${trainer.stats?.average_score?.toFixed(2) || '0'}</div>
+                            <div class="score-label">${getScoreLabel(trainer.stats?.average_score || 0)}</div>
+                        </div>
+                    </div>
+
+                    ${a ? renderAnalysis(a) : `
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p class="loading-text">Loading analysis...</p>
+                        </div>
+                    `}
+                ` : `
+                    <div class="error">
+                        <p class="error-text">No trainer selected</p>
+                    </div>
+                `}
+            `;
+        }
+
+        function renderAnalysis(a) {
+            const urgencyColor = a.intervention_urgency === 'immediate' ? '#ef4444' :
+                                a.intervention_urgency === 'short-term' ? '#f59e0b' : '#10b981';
+
+            return `
+                <!-- Executive Summary -->
+                <div class="section">
+                    <div class="section-title">Executive Summary</div>
+                    <p class="summary-text">${a.executive_summary || 'No summary available'}</p>
+                </div>
+
+                <!-- Intervention Urgency -->
+                <div class="section">
+                    <div class="section-title">Intervention Urgency</div>
+                    <div class="urgency-row">
+                        <span class="urgency-badge" style="background: ${urgencyColor}">
+                            ${(a.intervention_urgency || 'monitoring').toUpperCase()}
+                        </span>
+                        <span class="urgency-rationale">${a.urgency_rationale || ''}</span>
+                    </div>
+                </div>
+
+                <!-- Key Strengths -->
+                ${a.key_strengths?.length ? `
+                    <div class="section">
+                        <div class="collapsible-header" onclick="toggleSection('strengths')">
+                            <div class="section-title">Key Strengths</div>
+                            <span class="collapse-icon">${state.collapsedSections['strengths'] ? '▼' : '▲'}</span>
+                        </div>
+                        <div class="collapsible-content ${state.collapsedSections['strengths'] ? 'collapsed' : ''}">
+                            ${a.key_strengths.map(s => `
+                                <div class="item-card strength">
+                                    <div class="item-header">
+                                        <span class="item-title strength">
+                                            ${s.competency} ${s.average_score ? `(${s.average_score}/5.0)` : ''}
+                                        </span>
+                                    </div>
+                                    <div class="item-analysis">${s.analysis}</div>
+                                    ${s.example ? `<div class="item-example">"${s.example}"</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Development Areas -->
+                ${a.development_areas?.length ? `
+                    <div class="section">
+                        <div class="collapsible-header" onclick="toggleSection('development')">
+                            <div class="section-title">Development Areas</div>
+                            <span class="collapse-icon">${state.collapsedSections['development'] ? '▼' : '▲'}</span>
+                        </div>
+                        <div class="collapsible-content ${state.collapsedSections['development'] ? 'collapsed' : ''}">
+                            ${a.development_areas.map(d => `
+                                <div class="item-card development ${d.urgency === 'MEDIUM' ? 'medium' : ''}">
+                                    <div class="item-header">
+                                        <span class="item-title development ${d.urgency === 'MEDIUM' ? 'medium' : ''}">
+                                            ${d.competency} ${d.average_score ? `(${d.average_score}/5.0)` : ''}
+                                        </span>
+                                        ${d.urgency ? `<span class="priority-tag priority-${d.urgency.toLowerCase()}">${d.urgency}</span>` : ''}
+                                    </div>
+                                    <div class="item-analysis">${d.analysis}</div>
+                                    ${d.example ? `<div class="item-example">"${d.example}"</div>` : ''}
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Improvement Plan -->
+                ${a.improvement_plan?.length ? `
+                    <div class="section">
+                        <div class="collapsible-header" onclick="toggleSection('plan')">
+                            <div class="section-title">Improvement Plan for Observer</div>
+                            <span class="collapse-icon">${state.collapsedSections['plan'] ? '▼' : '▲'}</span>
+                        </div>
+                        <div class="collapsible-content ${state.collapsedSections['plan'] ? 'collapsed' : ''}">
+                            ${a.improvement_plan.map(step => `
+                                <div class="plan-step ${step.priority === 'IMMEDIATE' ? 'immediate' : step.priority === 'SHORT-TERM' ? 'short-term' : ''}">
+                                    <div class="step-number" style="background: ${step.priority === 'IMMEDIATE' ? '#ef4444' : step.priority === 'SHORT-TERM' ? '#f59e0b' : step.priority === 'LEVERAGE STRENGTH' ? '#10b981' : '#f97316'};">
+                                        ${step.step}
+                                    </div>
+                                    <div class="step-content">
+                                        <div class="step-header">
+                                            <span class="step-priority">${step.priority || ''}</span>
+                                            ${step.timeline ? `<span class="step-timeline">⏱️ ${step.timeline}</span>` : ''}
+                                        </div>
+                                        <div class="step-focus">${step.focus_area || ''}</div>
+                                        ${step.current_score ? `
+                                            <div class="step-scores">Current: ${step.current_score}/5.0 → Target: ${step.target_score}/5.0</div>
+                                        ` : ''}
+                                        ${step.diagnosis ? `<div class="step-diagnosis">${step.diagnosis}</div>` : ''}
+                                        ${step.actions?.length ? `
+                                            <div class="actions-box">
+                                                <div class="actions-title">ACTION STEPS:</div>
+                                                <ul class="actions-list">
+                                                    ${step.actions.map(action => `<li>${action}</li>`).join('')}
+                                                </ul>
+                                            </div>
+                                        ` : ''}
+                                        ${step.coaching_tip ? `
+                                            <div class="coaching-tip">
+                                                <span class="coaching-tip-label">💡 Coaching Tip:</span>
+                                                <span class="coaching-tip-text">${step.coaching_tip}</span>
+                                            </div>
+                                        ` : ''}
+                                        ${step.success_metric ? `<div class="step-metric">🎯 ${step.success_metric}</div>` : ''}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Observer Action Items -->
+                ${a.observer_action_items?.length ? `
+                    <div class="section">
+                        <div class="collapsible-header" onclick="toggleSection('actions')">
+                            <div class="section-title">Observer Action Items</div>
+                            <span class="collapse-icon">${state.collapsedSections['actions'] ? '▼' : '▲'}</span>
+                        </div>
+                        <div class="collapsible-content ${state.collapsedSections['actions'] ? 'collapsed' : ''}">
+                            <div class="action-items-list">
+                                <ul>
+                                    ${a.observer_action_items.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+
+                <!-- Qualitative Insights -->
+                ${(a.qualitative_insights?.strengths_from_comments?.length || a.qualitative_insights?.weaknesses_from_comments?.length) ? `
+                    <div class="section">
+                        <div class="collapsible-header" onclick="toggleSection('themes')">
+                            <div class="section-title">Themes from Observer Comments</div>
+                            <span class="collapse-icon">${state.collapsedSections['themes'] ? '▼' : '▲'}</span>
+                        </div>
+                        <div class="collapsible-content ${state.collapsedSections['themes'] ? 'collapsed' : ''}">
+                            <div class="themes-grid">
+                                ${a.qualitative_insights?.strengths_from_comments?.length ? `
+                                    <div>
+                                        <div class="theme-column-title positive">✓ Positive Themes:</div>
+                                        ${a.qualitative_insights.strengths_from_comments.slice(0, 3).map(t => `
+                                            <div class="theme-item">• ${t.theme} (${t.frequency}x)</div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                                ${a.qualitative_insights?.weaknesses_from_comments?.length ? `
+                                    <div>
+                                        <div class="theme-column-title concern">⚠ Areas Noted:</div>
+                                        ${a.qualitative_insights.weaknesses_from_comments.slice(0, 3).map(t => `
+                                            <div class="theme-item">• ${t.theme} (${t.frequency}x)</div>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+        }
+
+        // =============================================================================
+        // INITIALIZE
+        // =============================================================================
+        loadInitialData();
+    </script>
+</body>
+</html>
